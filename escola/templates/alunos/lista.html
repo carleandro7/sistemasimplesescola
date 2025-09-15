@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista de Alunos</title>
+</head>
+<body>
+    <h1>Alunos Cadastrados</h1>
+    <ul>
+        {% for aluno in alunos %}
+            <li>{{ aluno.nome }} - {{ aluno.escola.nome }}</li>
+        {% empty %}
+            <li>Nenhum aluno cadastrado.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'cadastrar_aluno' %}">Cadastrar Novo Aluno</a>
+</body>
+</html>
