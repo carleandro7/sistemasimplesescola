@@ -1,17 +1,40 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Lista de Alunos</title>
-</head>
-<body>
-    <h1>Alunos Cadastrados</h1>
-    <ul>
-        {% for aluno in alunos %}
-            <li>{{ aluno.nome }} - {{ aluno.escola.nome }}</li>
-        {% empty %}
-            <li>Nenhum aluno cadastrado.</li>
-        {% endfor %}
-    </ul>
-    <a href="{% url 'cadastrar_aluno' %}">Cadastrar Novo Aluno</a>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Alunos Cadastrados</h1>
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Escola</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aluno in alunos %}
+                <tr>
+                    <td>{{ aluno.nome }}</td>
+                    <td>{{ aluno.escola.nome }}</td>
+                    <td>
+                        <a href="{% url 'editar_aluno' aluno.id %}" class="btn btn-primary btn-sm">Editar</a>
+                        <form method="post" action="{% url 'excluir_aluno' aluno.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este aluno?');">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if alunos|length == 0 %}
+                <tr>
+                    <td colspan="3">Nenhum aluno cadastrado.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        <a href="{% url 'cadastrar_aluno' %}" class="btn btn-success">Cadastrar Novo Aluno</a>
+    </div>
+</div>
+<!-- Exclusão agora é feita via POST, sem JS -->
+{% endblock %}

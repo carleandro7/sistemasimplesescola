@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Cadastrar Aluno</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block content %}
     <h1>Cadastrar Aluno</h1>
     <form method="post">
         {% csrf_token %}
@@ -20,5 +17,5 @@
         </select><br><br>
         <button type="submit">Salvar</button>
     </form>
-</body>
-</html>
+</form>
+{% endblock %}

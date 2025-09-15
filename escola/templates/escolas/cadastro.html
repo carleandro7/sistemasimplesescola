@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Cadastrar Escola</h2>
+<form method="post">
+    {% csrf_token %}
+    <label>Nome:</label><input type="text" name="nome" required><br>
+    <label>Endereço:</label><input type="text" name="endereco" required><br>
+    <label>Cidade:</label><input type="text" name="cidade" required><br>
+    <label>Estado:</label><input type="text" name="estado" maxlength="2" required><br>
+    <label>Telefone:</label><input type="text" name="telefone" required><br>
+    <button type="submit">Salvar</button>
+    <a href="{% url 'lista_escolas' %}">Cancelar</a>
+</form>
+{% endblock %}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema Escolar</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        nav { margin-bottom: 20px; }
+        nav a { margin-right: 15px; text-decoration: none; color: #007bff; }
+        nav a:hover { text-decoration: underline; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #f4f4f4; }
+        button, input[type="submit"] { background: #007bff; color: #fff; border: none; padding: 6px 12px; cursor: pointer; }
+        button:hover, input[type="submit"]:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'lista_alunos' %}">Alunos</a>
+        <a href="{% url 'lista_escolas' %}">Escolas</a>
+    </nav>
+    {% block content %}{% endblock %}
+</body>
+</html>

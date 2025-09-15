@@ -1,0 +1,50 @@
+
+{% extends 'base.html' %}
+{% block content %}
+  <h1>Editar Aluno: {{ aluno.nome }}</h1>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <label>Nome:
+      <input type="text" name="nome" value="{{ val.nome }}">
+      {% if erros.nome %}<div class="erro">{{ erros.nome }}</div>{% endif %}
+    </label>
+
+    <label>Data de Nascimento (opcional):
+      <input type="date" name="data_nascimento" value="{{ val.data_nascimento }}">
+      {% if erros.data_nascimento %}<div class="erro">{{ erros.data_nascimento }}</div>{% endif %}
+    </label>
+
+    <label>Matrícula:
+      <input type="text" name="matricula" value="{{ val.matricula }}">
+      {% if erros.matricula %}<div class="erro">{{ erros.matricula }}</div>{% endif %}
+    </label>
+
+    <label>E-mail:
+      <input type="email" name="email" value="{{ val.email }}">
+      {% if erros.email %}<div class="erro">{{ erros.email }}</div>{% endif %}
+    </label>
+
+    <label>Telefone (opcional):
+      <input type="text" name="telefone" value="{{ val.telefone }}">
+    </label>
+
+    <label>Escola:
+      <select name="escola">
+        <option value="">-- selecione --</option>
+        {% for escola in escolas %}
+          <option value="{{ escola.id }}" {% if val.escola_id == escola.id|stringformat:"s" %}selected{% endif %}>
+            {{ escola.nome }}
+          </option>
+        {% endfor %}
+      </select>
+      {% if erros.escola %}<div class="erro">{{ erros.escola }}</div>{% endif %}
+    </label>
+
+    <div class="actions">
+      <button type="submit">Salvar alterações</button>
+      <a href="{% url 'lista_alunos' %}">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}

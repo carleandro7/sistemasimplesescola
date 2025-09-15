@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Lista de Escolas</h2>
+<a href="{% url 'cadastrar_escola' %}">Cadastrar Escola</a>
+<table border="1">
+    <tr>
+        <th>Nome</th>
+        <th>Endereço</th>
+        <th>Cidade</th>
+        <th>Estado</th>
+        <th>Telefone</th>
+        <th>Ações</th>
+    </tr>
+    {% for escola in escolas %}
+    <tr>
+        <td>{{ escola.nome }}</td>
+        <td>{{ escola.endereco }}</td>
+        <td>{{ escola.cidade }}</td>
+        <td>{{ escola.estado }}</td>
+        <td>{{ escola.telefone }}</td>
+        <td>
+            <a href="{% url 'editar_escola' escola.pk %}">Editar</a>
+            <form method="post" action="{% url 'excluir_escola' escola.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" onclick="return confirm('Tem certeza que deseja excluir esta escola?');">Excluir</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
