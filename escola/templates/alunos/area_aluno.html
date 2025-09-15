@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Bem-vindo, {{ request.user.aluno.nome }}</h1>
+  <p>Escola: {{ request.user.aluno.escola.nome }}</p>
+  <a href="{% url 'logout_aluno' %}">Sair</a>
+{% endblock %}

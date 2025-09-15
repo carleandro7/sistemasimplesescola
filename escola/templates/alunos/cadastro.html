@@ -9,6 +9,7 @@
         <label>Matrícula:</label><input type="text" name="matricula" required><br>
         <label>Email:</label><input type="email" name="email" required><br>
         <label>Telefone:</label><input type="text" name="telefone" required><br>
+        <label>Senha:</label><input type="password" name="senha" required><br>
         <label>Escola:</label>
         <select name="escola" required>
             {% for escola in escolas %}
@@ -17,5 +18,4 @@
         </select><br><br>
         <button type="submit">Salvar</button>
     </form>
-</form>
 {% endblock %}

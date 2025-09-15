@@ -1,12 +1,18 @@
+
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from .models import Aluno, Escola
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def lista_alunos(request):
     alunos = Aluno.objects.select_related('escola').all()
     return render(request, 'alunos/lista.html', {'alunos': alunos})
 
+@login_required
 def cadastrar_aluno(request):
     escolas = Escola.objects.all()
     if request.method == 'POST':
@@ -16,9 +22,18 @@ def cadastrar_aluno(request):
         email = request.POST['email']
         telefone = request.POST['telefone']
         escola_id = request.POST['escola']
+        senha = request.POST.get("senha")
 
         escola = Escola.objects.get(id=escola_id)
+
+        user = User.objects.create_user(
+            username=matricula,  # login será a matrícula
+            email=email,
+            password=senha
+        )
+        
         Aluno.objects.create(
+            user=user,
             nome=nome,
             data_nascimento=data_nascimento,
             matricula=matricula,
@@ -30,6 +45,7 @@ def cadastrar_aluno(request):
     
     return render(request, 'alunos/cadastro.html', {'escolas': escolas})
 
+@login_required
 def editar_aluno(request, pk):
     aluno = get_object_or_404(Aluno, pk=pk)
     escolas = Escola.objects.all()
@@ -42,6 +58,7 @@ def editar_aluno(request, pk):
         email = request.POST.get("email", "").strip()
         telefone = request.POST.get("telefone", "").strip()
         escola_id = request.POST.get("escola", "").strip()
+        senha = request.POST.get("senha")
 
         # Campos obrigatórios mínimos
         if not nome:
@@ -76,11 +93,20 @@ def editar_aluno(request, pk):
                 erros["escola"] = "Escola inválida."
 
         if not erros:
+            # Atualiza os dados do usuário vinculado ao aluno
+            user = aluno.user
+            user.username = matricula
+            user.email = email
+            if senha:
+                user.set_password(senha)
+            user.save()
+
+            # Atualiza os dados do aluno
             aluno.nome = nome
-            aluno.data_nascimento = data_nascimento  # opcional
+            aluno.data_nascimento = data_nascimento
             aluno.matricula = matricula
             aluno.email = email
-            aluno.telefone = telefone  # opcional (pode ser vazio)
+            aluno.telefone = telefone
             aluno.escola = escola
             aluno.save()
             return redirect("lista_alunos")
@@ -117,7 +143,7 @@ def editar_aluno(request, pk):
     }
     return render(request, "alunos/editar.html", contexto)
 
-
+@login_required
 def excluir_aluno(request, pk):
     aluno = get_object_or_404(Aluno, pk=pk)
     if request.method == "POST":
@@ -125,11 +151,13 @@ def excluir_aluno(request, pk):
     return redirect("lista_alunos")
 
 
-# CRUD Escola
+@login_required
+@login_required
 def lista_escolas(request):
     escolas = Escola.objects.all()
     return render(request, 'escolas/lista.html', {'escolas': escolas})
 
+@login_required
 def cadastrar_escola(request):
     if request.method == 'POST':
         nome = request.POST['nome']
@@ -147,6 +175,7 @@ def cadastrar_escola(request):
         return redirect('lista_escolas')
     return render(request, 'escolas/cadastro.html')
 
+@login_required
 def editar_escola(request, pk):
     escola = get_object_or_404(Escola, pk=pk)
     if request.method == 'POST':
@@ -159,9 +188,49 @@ def editar_escola(request, pk):
         return redirect('lista_escolas')
     return render(request, 'escolas/editar.html', {'escola': escola})
 
+@login_required
 def excluir_escola(request, pk):
     escola = get_object_or_404(Escola, pk=pk)
     if request.method == 'POST':
         escola.delete()
     return redirect('lista_escolas')
 
+@login_required
+def area_aluno(request):
+    # Se quiser pegar o Aluno vinculado:
+    # aluno = request.user.aluno  (por causa do related_name='aluno')
+    return render(request, "alunos/area_aluno.html")
+
+def login_aluno(request):
+    if request.method == "POST":
+        matricula = request.POST.get("matricula")
+        senha = request.POST.get("senha")
+        user = authenticate(request, username=matricula, password=senha)
+        if user is not None:
+            login(request, user)
+            return redirect("area_aluno")  # página inicial do aluno (você define)
+        else:
+            return render(request, "alunos/login.html", {"erro": "Credenciais inválidas."})
+    return render(request, "alunos/login.html")
+
+def logout_aluno(request):
+    logout(request)
+    return redirect("login_aluno")
+
+# Login
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('lista_alunos')
+        else:
+            return render(request, 'login.html', {'erro': 'Usuário ou senha inválidos'})
+    return render(request, 'login.html')
+
+# Logout
+def logout_view(request):
+    logout(request)
+    return redirect('login')
