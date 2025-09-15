@@ -1,3 +1,6 @@
+from django.http import HttpResponse
+from xhtml2pdf import pisa
+
 
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
@@ -7,6 +10,19 @@ from .models import Aluno, Escola
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+
+@login_required
+def alunos_pdf(request):
+    alunos = Aluno.objects.select_related('escola').all()
+    template_path = 'alunos/pdf.html'
+    context = {'alunos': alunos}
+    html = render(request, template_path, context).content.decode('utf-8')
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="alunos.pdf"'
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Erro ao gerar PDF', status=500)
+    return response
 
 @login_required
 def lista_alunos(request):
