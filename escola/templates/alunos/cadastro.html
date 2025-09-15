@@ -1,21 +1,81 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Cadastrar Aluno</h1>
-    <form method="post">
-        {% csrf_token %}
-        <label>Nome:</label><input type="text" name="nome" required><br>
-        <label>Data de Nascimento:</label><input type="date" name="data_nascimento" required><br>
-        <label>Matrícula:</label><input type="text" name="matricula" required><br>
-        <label>Email:</label><input type="email" name="email" required><br>
-        <label>Telefone:</label><input type="text" name="telefone" required><br>
-        <label>Senha:</label><input type="password" name="senha" required><br>
-        <label>Escola:</label>
-        <select name="escola" required>
-            {% for escola in escolas %}
-                <option value="{{ escola.id }}">{{ escola.nome }}</option>
-            {% endfor %}
-        </select><br><br>
-        <button type="submit">Salvar</button>
-    </form>
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+            <h2 class="page-header">
+                Novo Aluno
+            </h2>
+        </div>
+    </div>
+    <div class="aluno form">
+        <form method="post" class="form-horizontal">
+            {% csrf_token %}
+            {% if form.errors %}
+                <div id="error_explanation" class="panel panel-danger mensagem-erro-cabecalho">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ form.errors|length }} erro(s) ao salvar:</h3>
+                    </div>
+                    <div class="panel-body">
+                        <ul>
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-lg-6 form-group">
+                    <label for="id_nome" class="control-label required">Nome</label>
+                    <input type="text" name="nome" id="id_nome" class="form-control" required>
+                </div>
+                <div class="col-lg-3 form-group">
+                    <label for="id_data_nascimento" class="control-label required">Data de Nascimento</label>
+                    <input type="date" name="data_nascimento" id="id_data_nascimento" class="form-control" required>
+                </div>
+                <div class="col-lg-3 form-group">
+                    <label for="id_matricula" class="control-label required">Matrícula</label>
+                    <input type="text" name="matricula" id="id_matricula" class="form-control" required>
+                </div>
+                <div class="col-lg-4 form-group">
+                    <label for="id_email" class="control-label required">Email</label>
+                    <input type="email" name="email" id="id_email" class="form-control" required>
+                </div>
+                <div class="col-lg-3 form-group">
+                    <label for="id_telefone" class="control-label required">Telefone</label>
+                    <input type="text" name="telefone" id="id_telefone" class="form-control" required>
+                </div>
+                <div class="col-lg-4 form-group">
+                    <label for="id_senha" class="control-label required">Senha</label>
+                    <input type="password" name="senha" id="id_senha" class="form-control" required>
+                </div>
+                <div class="col-lg-6 form-group">
+                    <label for="id_escola" class="control-label required">Escola</label>
+                    <select name="escola" id="id_escola" class="form-control" required>
+                        <option value="">Selecionar</option>
+                        {% for escola in escolas %}
+                            <option value="{{ escola.id }}">{{ escola.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-3 form-group">
+                    <button type="submit" class="btn btn-primary colorprimarybtn" data-disable-with="Salvando">Salvar</button>
+                </div>
+                <div class="col-lg-3 form-group">
+                    <a href="{% url 'lista_alunos' %}" class="btn btn-primary colorprimarybtn">Voltar</a>
+                </div>
+            </div>
+        </form>
+    </div>
 {% endblock %}

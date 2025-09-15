@@ -7,6 +7,7 @@
         <table class="table table-striped">
             <thead>
                 <tr>
+                    <th>Matrícula</th>
                     <th>Nome</th>
                     <th>Escola</th>
                     <th>Ações</th>
@@ -15,13 +16,14 @@
             <tbody>
                 {% for aluno in alunos %}
                 <tr>
+                    <td>{{ aluno.matricula }}</td>
                     <td>{{ aluno.nome }}</td>
                     <td>{{ aluno.escola.nome }}</td>
                     <td>
-                        <a href="{% url 'editar_aluno' aluno.id %}" class="btn btn-primary btn-sm">Editar</a>
+                        <a href="{% url 'editar_aluno' aluno.id %}" class="btn btn-primary colorprimarybtn2">Alterar</a>
                         <form method="post" action="{% url 'excluir_aluno' aluno.id %}" style="display:inline;">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este aluno?');">Excluir</button>
+                            <button type="submit" class="btn btn-danger colorprimarybtn2" onclick="return confirm('Tem certeza que deseja excluir este aluno?');">Excluir</button>
                         </form>
                     </td>
                 </tr>
