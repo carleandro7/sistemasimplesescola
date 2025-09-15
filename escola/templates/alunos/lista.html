@@ -1,7 +1,23 @@
 {% extends 'base.html' %}
 
+
 {% block content %}
 <h1>Alunos Cadastrados</h1>
+
+<form method="get">
+   <div class="row mb-4">
+    <div class="col-md-6 mb-2">
+        <input type="text" name="q" class="form-control" placeholder="Pesquisar por nome ou matrícula" value="{{ request.GET.q }}">
+    </div>
+    <div class="col-md-2 mb-2">
+        <button type="submit" class="btn btn-primary colorprimarybtn">Pesquisar</button>
+    </div>
+    <div class="col-md-2 mb-2">
+        <a href="{% url 'cadastrar_aluno' %}" class="btn btn-primary colorprimarybtn">Cadastrar Novo Aluno</a>    
+    </div>
+   
+    </div>
+</form>
 <div class="card">
     <div class="card-body">
         <table class="table table-striped">
@@ -30,12 +46,12 @@
                 {% endfor %}
                 {% if alunos|length == 0 %}
                 <tr>
-                    <td colspan="3">Nenhum aluno cadastrado.</td>
+                    <td colspan="4">Nenhum aluno cadastrado.</td>
                 </tr>
                 {% endif %}
             </tbody>
         </table>
-        <a href="{% url 'cadastrar_aluno' %}" class="btn btn-success">Cadastrar Novo Aluno</a>
+       
     </div>
 </div>
 <!-- Exclusão agora é feita via POST, sem JS -->

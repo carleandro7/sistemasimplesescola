@@ -9,7 +9,10 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def lista_alunos(request):
+    q = request.GET.get('q', '').strip()
     alunos = Aluno.objects.select_related('escola').all()
+    if q:
+        alunos = alunos.filter(Q(nome__icontains=q) | Q(matricula__icontains=q))
     return render(request, 'alunos/lista.html', {'alunos': alunos})
 
 @login_required
