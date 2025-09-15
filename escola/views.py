@@ -2,6 +2,7 @@
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
+from django.core.paginator import Paginator
 from .models import Aluno, Escola
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -13,7 +14,11 @@ def lista_alunos(request):
     alunos = Aluno.objects.select_related('escola').all()
     if q:
         alunos = alunos.filter(Q(nome__icontains=q) | Q(matricula__icontains=q))
-    return render(request, 'alunos/lista.html', {'alunos': alunos})
+
+    paginator = Paginator(alunos, 10)  # 10 alunos por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'alunos/lista.html', {'alunos': page_obj, 'page_obj': page_obj})
 
 @login_required
 def cadastrar_aluno(request):
