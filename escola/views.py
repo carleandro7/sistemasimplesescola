@@ -1,7 +1,5 @@
 from django.http import HttpResponse
 from xhtml2pdf import pisa
-
-
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
@@ -258,6 +256,10 @@ def excluir_aluno(request, pk):
     return redirect("lista_alunos")
 
 
+"""
+Inicia as views para Escola para o cadastro, edição, listagem e exclusão.
+"""
+
 @login_required
 def lista_escolas(request):
     """
@@ -337,6 +339,10 @@ def login_aluno(request):
             return render(request, "alunos/login.html", {"erro": "Credenciais inválidas."})
     return render(request, "alunos/login.html")
 
+"""
+   Iniciado Autentica o aluno usando matrícula e senha.
+"""
+
 def logout_aluno(request):
     """
     Realiza logout do aluno.
@@ -369,6 +375,9 @@ def logout_view(request):
     return redirect('login')
 
 
+"""
+    Inicia a geração do PDF com os dados dos alunos.
+"""
 @login_required
 def alunos_pdf(request):
     """
