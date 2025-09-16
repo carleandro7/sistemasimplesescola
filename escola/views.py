@@ -9,6 +9,7 @@ from django.core.paginator import Paginator
 from .models import Aluno, Escola
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.contrib.auth.decorators import login_required
 
 
@@ -34,35 +35,98 @@ def cadastrar_aluno(request):
     Cadastra um novo aluno e cria um usuário vinculado para autenticação.
     """
     escolas = Escola.objects.all()
+    erros = {}
+    val = {}
     if request.method == 'POST':
-        nome = request.POST['nome']
-        data_nascimento = request.POST['data_nascimento']
-        matricula = request.POST['matricula']
-        email = request.POST['email']
-        telefone = request.POST['telefone']
-        escola_id = request.POST['escola']
-        senha = request.POST.get("senha")
+        nome = request.POST.get('nome', '').strip()
+        data_nascimento_str = request.POST.get('data_nascimento', '').strip()
+        matricula = request.POST.get('matricula', '').strip()
+        email = request.POST.get('email', '').strip()
+        telefone = request.POST.get('telefone', '').strip()
+        escola_id = request.POST.get('escola', '').strip()
+        senha = request.POST.get('senha', '').strip()
 
-        escola = Escola.objects.get(id=escola_id)
+        val = {
+            'nome': nome,
+            'data_nascimento': data_nascimento_str,
+            'matricula': matricula,
+            'email': email,
+            'telefone': telefone,
+            'escola_id': escola_id,
+        }
 
-        user = User.objects.create_user(
-            username=matricula,  # login será a matrícula
-            email=email,
-            password=senha
-        )
-        
-        Aluno.objects.create(
-            user=user,
-            nome=nome,
-            data_nascimento=data_nascimento,
-            matricula=matricula,
-            email=email,
-            telefone=telefone,
-            escola=escola
-        )
-        return redirect('lista_alunos')
-    
-    return render(request, 'alunos/cadastro.html', {'escolas': escolas})
+        # Validação dos campos obrigatórios
+        if not nome:
+            erros['nome'] = 'Nome é obrigatório.'
+        if not data_nascimento_str:
+            erros['data_nascimento'] = 'Data de nascimento é obrigatória.'
+        if not matricula:
+            erros['matricula'] = 'Matrícula é obrigatória.'
+        if not email:
+            erros['email'] = 'E-mail é obrigatório.'
+        if not escola_id:
+            erros['escola'] = 'Selecione uma escola.'
+        if not senha:
+            erros['senha'] = 'Senha é obrigatória.'
+
+        # Validação do formato da data
+        data_nascimento = None
+        if data_nascimento_str:
+            try:
+                data_nascimento = datetime.strptime(data_nascimento_str, "%Y-%m-%d").date()
+            except ValueError:
+                erros['data_nascimento'] = 'Data de nascimento inválida (use AAAA-MM-DD).'
+
+
+        # Unicidade para aluno
+        if matricula and Aluno.objects.filter(matricula=matricula).exists():
+            erros['matricula'] = 'Já existe um aluno com essa matrícula.'
+        if email and Aluno.objects.filter(email=email).exists():
+            erros['email'] = 'Já existe um aluno com esse e-mail.'
+        # Unicidade para usuário
+        if matricula and User.objects.filter(username=matricula).exists():
+            erros['matricula'] = 'Já existe um usuário com essa matrícula.'
+
+        # Escola
+        escola = None
+        if escola_id:
+            try:
+                escola = Escola.objects.get(id=escola_id)
+            except Escola.DoesNotExist:
+                erros['escola'] = 'Escola inválida.'
+
+
+        if not erros:
+            try:
+            # Inicia uma transação atômica para garantir que usuário e aluno sejam criados juntos
+                with transaction.atomic():
+                    # Cria o usuário Django vinculado ao aluno
+                    user = User.objects.create_user(
+                        username=matricula,
+                        email=email,
+                        password=senha
+                    )
+                    # Cria o registro do aluno e vincula ao usuário criado
+                    aluno = Aluno.objects.create(
+                        user=user,
+                        nome=nome,
+                        data_nascimento=data_nascimento,
+                        matricula=matricula,
+                        email=email,
+                        telefone=telefone,
+                        escola=escola
+                    )
+                # Redireciona para a lista de alunos após cadastro bem-sucedido
+                return redirect('lista_alunos')
+            except Exception as e:
+                erros['matricula'] = 'Erro ao criar usuário/aluno: já existe um usuário ou aluno com essa matrícula.'
+        # Se houver erros, re-renderiza com os valores enviados
+        return render(request, 'alunos/cadastro.html', {'escolas': escolas, 'erros': erros, 'val': val})
+
+    # GET: renderiza formulário vazio
+    return render(request, 'alunos/cadastro.html', {'escolas': escolas, 'erros': erros, 'val': val})
+
+       
 
 @login_required
 def editar_aluno(request, pk):

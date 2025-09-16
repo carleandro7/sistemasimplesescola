@@ -20,5 +20,5 @@ urlpatterns = [
 
     path('login/', views.login_aluno, name='login_aluno'),
     path('logout/', views.logout_aluno, name='logout_aluno'),
-    path('area-aluno/', views.area_aluno, name='area_aluno'),
+    path('', views.area_aluno, name='area_aluno'),
 ]
