@@ -136,6 +136,7 @@ def editar_aluno(request, pk):
     aluno = get_object_or_404(Aluno, pk=pk)
     escolas = Escola.objects.all()
     erros = {}
+    val = {}
 
     if request.method == "POST":
         nome = request.POST.get("nome", "").strip()
@@ -144,11 +145,22 @@ def editar_aluno(request, pk):
         email = request.POST.get("email", "").strip()
         telefone = request.POST.get("telefone", "").strip()
         escola_id = request.POST.get("escola", "").strip()
-        senha = request.POST.get("senha")
+        senha = request.POST.get("senha", "").strip()
 
-        # Campos obrigatórios mínimos
+        val = {
+            "nome": nome,
+            "data_nascimento": dn_str,
+            "matricula": matricula,
+            "email": email,
+            "telefone": telefone,
+            "escola_id": escola_id,
+        }
+
+        # Validação dos campos obrigatórios
         if not nome:
             erros["nome"] = "Nome é obrigatório."
+        if not dn_str:
+            erros["data_nascimento"] = "Data de nascimento é obrigatória."
         if not matricula:
             erros["matricula"] = "Matrícula é obrigatória."
         if not email:
@@ -156,19 +168,22 @@ def editar_aluno(request, pk):
         if not escola_id:
             erros["escola"] = "Selecione uma escola."
 
-        # Unicidade (ignorando o próprio aluno)
-        if matricula and Aluno.objects.exclude(pk=aluno.pk).filter(matricula=matricula).exists():
-            erros["matricula"] = "Já existe um aluno com essa matrícula."
-        if email and Aluno.objects.exclude(pk=aluno.pk).filter(email=email).exists():
-            erros["email"] = "Já existe um aluno com esse e-mail."
-
-        # Parse da data opcional
+        # Validação do formato da data
         data_nascimento = None
         if dn_str:
             try:
                 data_nascimento = datetime.strptime(dn_str, "%Y-%m-%d").date()
             except ValueError:
                 erros["data_nascimento"] = "Data de nascimento inválida (use AAAA-MM-DD)."
+
+        # Unicidade para aluno (ignorando o próprio)
+        if matricula and Aluno.objects.exclude(pk=aluno.pk).filter(matricula=matricula).exists():
+            erros["matricula"] = "Já existe um aluno com essa matrícula."
+        if email and Aluno.objects.exclude(pk=aluno.pk).filter(email=email).exists():
+            erros["email"] = "Já existe um aluno com esse e-mail."
+        # Unicidade para usuário (ignorando o próprio)
+        if matricula and aluno.user.username != matricula and User.objects.exclude(pk=aluno.user.pk).filter(username=matricula).exists():
+            erros["matricula"] = "Já existe um usuário com essa matrícula."
 
         # Escola
         escola = None
@@ -179,37 +194,40 @@ def editar_aluno(request, pk):
                 erros["escola"] = "Escola inválida."
 
         if not erros:
-            # Atualiza os dados do usuário vinculado ao aluno
-            user = aluno.user
-            user.username = matricula
-            user.email = email
-            if senha:
-                user.set_password(senha)
-            user.save()
+            try:
+                with transaction.atomic():
+                    # Só altera o usuário se algum dado do aluno mudou
+                    user = aluno.user
+                    user_changed = False
+                    if aluno.matricula != matricula:
+                        user.username = matricula
+                        user_changed = True
+                    if aluno.email != email:
+                        user.email = email
+                        user_changed = True
+                    if senha:
+                        user.set_password(senha)
+                        user_changed = True
+                    if user_changed:
+                        user.save()
 
-            # Atualiza os dados do aluno
-            aluno.nome = nome
-            aluno.data_nascimento = data_nascimento
-            aluno.matricula = matricula
-            aluno.email = email
-            aluno.telefone = telefone
-            aluno.escola = escola
-            aluno.save()
-            return redirect("lista_alunos")
-
+                    # Atualiza os dados do aluno
+                    aluno.nome = nome
+                    aluno.data_nascimento = data_nascimento
+                    aluno.matricula = matricula
+                    aluno.email = email
+                    aluno.telefone = telefone
+                    aluno.escola = escola
+                    aluno.save()
+                return redirect("lista_alunos")
+            except Exception as e:
+                erros["matricula"] = "Erro ao atualizar usuário/aluno: já existe um usuário ou aluno com essa matrícula."
         # Se houver erros, re-renderiza com os valores enviados
         contexto = {
             "aluno": aluno,
             "escolas": escolas,
             "erros": erros,
-            "val": {
-                "nome": nome,
-                "data_nascimento": dn_str,
-                "matricula": matricula,
-                "email": email,
-                "telefone": telefone,
-                "escola_id": escola_id,
-            },
+            "val": val,
         }
         return render(request, "alunos/editar.html", contexto)
 
