@@ -42,9 +42,9 @@ Este projeto é um sistema simples de gerenciamento escolar desenvolvido em Pyth
 Acesse `http://localhost:8000/` no navegador para utilizar o sistema.
 
 ## Login padrão com o sqlite
-
+```bash
 Usuário: teste
 Senha: 123456
-
+ ```
 ## Licença
 Este projeto está sob a licença MIT.
