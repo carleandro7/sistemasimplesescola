@@ -11,21 +11,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
-@login_required
-def alunos_pdf(request):
-    alunos = Aluno.objects.select_related('escola').all()
-    template_path = 'alunos/pdf.html'
-    context = {'alunos': alunos}
-    html = render(request, template_path, context).content.decode('utf-8')
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="alunos.pdf"'
-    pisa_status = pisa.CreatePDF(html, dest=response)
-    if pisa_status.err:
-        return HttpResponse('Erro ao gerar PDF', status=500)
-    return response
+
 
 @login_required
 def lista_alunos(request):
+    """
+    Exibe a lista de alunos cadastrados, com busca por nome ou matrícula e paginação.
+    """
     q = request.GET.get('q', '').strip()
     alunos = Aluno.objects.select_related('escola').all()
     if q:
@@ -38,6 +30,9 @@ def lista_alunos(request):
 
 @login_required
 def cadastrar_aluno(request):
+    """
+    Cadastra um novo aluno e cria um usuário vinculado para autenticação.
+    """
     escolas = Escola.objects.all()
     if request.method == 'POST':
         nome = request.POST['nome']
@@ -71,6 +66,9 @@ def cadastrar_aluno(request):
 
 @login_required
 def editar_aluno(request, pk):
+    """
+    Edita os dados de um aluno e do usuário vinculado.
+    """
     aluno = get_object_or_404(Aluno, pk=pk)
     escolas = Escola.objects.all()
     erros = {}
@@ -169,6 +167,9 @@ def editar_aluno(request, pk):
 
 @login_required
 def excluir_aluno(request, pk):
+    """
+    Exclui um aluno do sistema via POST.
+    """
     aluno = get_object_or_404(Aluno, pk=pk)
     if request.method == "POST":
         aluno.delete()
@@ -176,13 +177,18 @@ def excluir_aluno(request, pk):
 
 
 @login_required
-@login_required
 def lista_escolas(request):
+    """
+    Exibe a lista de escolas cadastradas.
+    """
     escolas = Escola.objects.all()
     return render(request, 'escolas/lista.html', {'escolas': escolas})
 
 @login_required
 def cadastrar_escola(request):
+    """
+    Cadastra uma nova escola.
+    """
     if request.method == 'POST':
         nome = request.POST['nome']
         endereco = request.POST['endereco']
@@ -201,6 +207,9 @@ def cadastrar_escola(request):
 
 @login_required
 def editar_escola(request, pk):
+    """
+    Edita os dados de uma escola.
+    """
     escola = get_object_or_404(Escola, pk=pk)
     if request.method == 'POST':
         escola.nome = request.POST['nome']
@@ -214,6 +223,9 @@ def editar_escola(request, pk):
 
 @login_required
 def excluir_escola(request, pk):
+    """
+    Exclui uma escola do sistema via POST.
+    """
     escola = get_object_or_404(Escola, pk=pk)
     if request.method == 'POST':
         escola.delete()
@@ -221,11 +233,17 @@ def excluir_escola(request, pk):
 
 @login_required
 def area_aluno(request):
+    """
+    Exibe a área do aluno logado.
+    """
     # Se quiser pegar o Aluno vinculado:
     # aluno = request.user.aluno  (por causa do related_name='aluno')
     return render(request, "alunos/area_aluno.html")
 
 def login_aluno(request):
+    """
+    Autentica o aluno usando matrícula e senha.
+    """
     if request.method == "POST":
         matricula = request.POST.get("matricula")
         senha = request.POST.get("senha")
@@ -238,11 +256,17 @@ def login_aluno(request):
     return render(request, "alunos/login.html")
 
 def logout_aluno(request):
+    """
+    Realiza logout do aluno.
+    """
     logout(request)
     return redirect("login_aluno")
 
 # Login
 def login_view(request):
+    """
+    Autentica usuário padrão Django (username/senha).
+    """
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -256,5 +280,38 @@ def login_view(request):
 
 # Logout
 def logout_view(request):
+    """
+    Realiza logout do usuário padrão Django.
+    """
     logout(request)
     return redirect('login')
+
+
+@login_required
+def alunos_pdf(request):
+    """
+    Gera e retorna um PDF com os dados de todos os alunos usando um template HTML.
+    """
+    # Busca todos os alunos, incluindo o nome da escola
+    alunos = Aluno.objects.select_related('escola').all()
+
+    # Caminho do template HTML que será usado para gerar o PDF
+    template_path = 'alunos/pdf.html'
+    context = {'alunos': alunos}
+
+    # Renderiza o template HTML com os dados dos alunos
+    html = render(request, template_path, context).content.decode('utf-8')
+
+    # Cria a resposta HTTP para download do PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="alunos.pdf"'
+
+    # Converte o HTML renderizado em PDF usando xhtml2pdf
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    # Se houver erro na geração do PDF, retorna mensagem de erro
+    if pisa_status.err:
+        return HttpResponse('Erro ao gerar PDF', status=500)
+
+    # Retorna o PDF gerado para download
+    return response
