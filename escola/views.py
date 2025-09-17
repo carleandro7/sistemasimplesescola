@@ -324,31 +324,6 @@ def area_aluno(request):
     # aluno = request.user.aluno  (por causa do related_name='aluno')
     return render(request, "alunos/area_aluno.html")
 
-def login_aluno(request):
-    """
-    Autentica o aluno usando matrícula e senha.
-    """
-    if request.method == "POST":
-        matricula = request.POST.get("matricula")
-        senha = request.POST.get("senha")
-        user = authenticate(request, username=matricula, password=senha)
-        if user is not None:
-            login(request, user)
-            return redirect("area_aluno")  # página inicial do aluno (você define)
-        else:
-            return render(request, "alunos/login.html", {"erro": "Credenciais inválidas."})
-    return render(request, "alunos/login.html")
-
-"""
-   Iniciado Autentica o aluno usando matrícula e senha.
-"""
-
-def logout_aluno(request):
-    """
-    Realiza logout do aluno.
-    """
-    logout(request)
-    return redirect("login_aluno")
 
 # Login
 def login_view(request):

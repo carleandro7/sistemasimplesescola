@@ -128,6 +128,6 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-LOGIN_URL = 'login_aluno'
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'area_aluno'
-LOGOUT_REDIRECT_URL = 'login_aluno'
+LOGOUT_REDIRECT_URL = 'login'

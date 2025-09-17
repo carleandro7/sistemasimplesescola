@@ -17,8 +17,5 @@ urlpatterns = [
     # Autenticação
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
-
-    path('login/', views.login_aluno, name='login_aluno'),
-    path('logout/', views.logout_aluno, name='logout_aluno'),
     path('', views.area_aluno, name='area_aluno'),
 ]

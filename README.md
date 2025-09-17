@@ -46,5 +46,10 @@ Acesse `http://localhost:8000/` no navegador para utilizar o sistema.
 Usuário: teste
 Senha: 123456
  ```
+
+## Para executar os teste de escola em tests.py
+```bash
+python3 manage.py test escola
+```
 ## Licença
 Este projeto está sob a licença MIT.
